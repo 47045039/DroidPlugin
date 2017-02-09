@@ -1,5 +1,5 @@
 // ICallback.aidl
-package com.liuqunshan.mylibrary;
+package com.liuqunshan.base;
 
 // Declare any non-default types here with import statements
 
