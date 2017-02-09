@@ -1,9 +1,11 @@
 package com.example.TestPlugin;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
@@ -192,7 +194,18 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
         new Thread("ApkScanner") {
             @Override
             public void run() {
-                File file = Environment.getExternalStorageDirectory();
+                final File file = Environment.getExternalStorageDirectory();
+
+                final Activity ctx = getActivity();
+                if (ctx != null) {
+                    ctx.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getContext(), "external storage directory: " + file,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
 
                 List<File> apks = new ArrayList<File>(10);
                 File[] files = file.listFiles();
@@ -204,10 +217,9 @@ public class ApkFragment extends ListFragment implements ServiceConnection {
                     }
                 }
 
-
-                file = new File(Environment.getExternalStorageDirectory(), "360Download");
-                if (file.exists() && file.isDirectory()) {
-                    File[] files1 = file.listFiles();
+                final File file2 = new File(file, "plugin");
+                if (file2.exists() && file2.isDirectory()) {
+                    File[] files1 = file2.listFiles();
                     if (files1 != null) {
                         for (File apk : files1) {
                             if (apk.exists() && apk.getPath().toLowerCase().endsWith(".apk")) {

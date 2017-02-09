@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.v4.app.ListFragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,6 +34,8 @@ import java.util.List;
 
 public class InstalledFragment extends ListFragment implements ServiceConnection {
 
+    private static final String TAG = InstalledFragment.class.getSimpleName();
+
     private ArrayAdapter<ApkItem> adapter;
 
     final Handler handler = new Handler();
@@ -44,9 +48,41 @@ public class InstalledFragment extends ListFragment implements ServiceConnection
     public void onListItemClick(ListView l, View v, int position, long id) {
         ApkItem item = adapter.getItem(position);
         if (v.getId() == R.id.button2) {
+            Log.e(TAG, "item: " + item.title + " " + item.packageInfo.packageName + " " + item.packageInfo.activities);
 
-            PackageManager pm = getActivity().getPackageManager();
-            Intent intent = pm.getLaunchIntentForPackage(item.packageInfo.packageName);
+            ActivityInfo[] acts = item.packageInfo.activities;
+            if (acts == null || acts.length == 0) {
+                try {
+                    PackageInfo info = PluginManager.getInstance().getPackageInfo(item
+                            .packageInfo.packageName, PackageManager.GET_ACTIVITIES);
+                    acts = (info == null ? null : info.activities);
+
+                    if (acts == null || acts.length == 0) {
+                        Log.e(TAG, "no activities: " + item.title + " " + item.packageInfo.packageName);
+                        return;
+                    }
+
+                    item.packageInfo.activities = acts;
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+
+            final Intent intent = new Intent();
+            intent.setClassName(acts[0].packageName, acts[0].name);
+            Log.e(TAG, "!@@@@@@@@@@@ intent: " + intent);
+
+//            PackageManager pm = getActivity().getPackageManager();
+//            Log.e(TAG, "!@@@@@@@@@@@ pm: " + pm);
+//
+//            Intent intent = pm.getLaunchIntentForPackage(item.packageInfo.packageName);
+//            Log.e(TAG, "!@@@@@@@@@@@ pm: " + pm + "   " + intent);
+//
+//            if (intent == null) {
+//                return;
+//            }
+
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         } else if (v.getId() == R.id.button3) {
