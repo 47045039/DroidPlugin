@@ -1,4 +1,7 @@
 include ':Libraries:DroidPlugin'
 include ':TestPlugin'
 include ':Test:ApiTest'
+include ':pluginbase'
+include ':plugin1'
+include ':plugin2'
 rootProject.name = 'DroidPlugin'
